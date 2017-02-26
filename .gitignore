@@ -1,0 +1,15 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+iisnode.yml
+npm-debug.log
+
+db/shortly.sqlite
+node_modules
+bower_components
+public/dist
+lib/
+keys
+*.pem
+awsConfig.json
+Thesis-b9fb73d56c41.json
