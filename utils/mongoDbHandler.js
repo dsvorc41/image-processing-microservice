@@ -68,17 +68,17 @@ module.exports = {
     model.findOne(query, {}, (err, imageFromDB) => {
       if (err || !imageFromDB) {
         console.log('Error finding the image', err);
-        respond(404, 'Error finding the image!');
+        respond(201, 'Error finding the image!');
       } else if (imageFromDB) {
         console.log(imageFromDB);
         const comparison = compareImageLabels(imageFromDB.GoogleVisionResultLabels, googleImageLabelsToCompare);
         if (comparison) {
           respond(201, 'Images are the same!');
         } else {
-          respond(404, 'Images are not the same!');
+          respond(201, 'Images are not the same!');
         }
       } else {
-          respond(404, 'Images not found in the database!');
+          respond(201, 'Images not found in the database!');
       }
     });
   }
