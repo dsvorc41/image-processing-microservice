@@ -66,10 +66,10 @@ module.exports = {
   compareImage: (comparisonImageId, googleImageLabelsToCompare, respond) => {
     const query = { _id: comparisonImageId };
     model.findOne(query, {}, (err, imageFromDB) => {
-      if (err) {
+      if (err || !imageFromDB) {
         console.log('Error finding the image', err);
         respond(404, 'Error finding the image!');
-      } else {
+      } else if (imageFromDB) {
         console.log(imageFromDB);
         const comparison = compareImageLabels(imageFromDB.GoogleVisionResultLabels, googleImageLabelsToCompare);
         if (comparison) {
@@ -77,6 +77,8 @@ module.exports = {
         } else {
           respond(404, 'Images are not the same!');
         }
+      } else {
+          respond(404, 'Images not found in the database!');
       }
     });
   }
