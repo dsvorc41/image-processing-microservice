@@ -62,9 +62,9 @@ module.exports = {
         console.log(imageFromDB);
         const comparison = compareImageLabels(imageFromDB.GoogleVisionResultLabels, googleImageLabelsToCompare);
         if (comparison) {
-          respond(201, JSON.stringify(1));
+          respond(201, 'Images are the same!');
         } else {
-          respond(404, JSON.stringify(0));
+          respond(404, 'Images are not the same!');
         }
       }
     });
