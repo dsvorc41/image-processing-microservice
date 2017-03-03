@@ -23,7 +23,7 @@ module.exports = (req, res) => {
           s3ImageLocation, 
           googleImageLabels[1],
           targetImageLatitude,
-          targetImageLongitude
+          targetImageLongitude,
           (statusCode, message) => {
             console.log('ANALYZE');
             sendResponse(res, statusCode, headers, message);
