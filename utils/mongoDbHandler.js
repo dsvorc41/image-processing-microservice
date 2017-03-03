@@ -46,11 +46,12 @@ module.exports = {
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
     const newImage = new model(update);
-
+    console.log('IMAGE SAVE PARAMS: ', update);
     newImage.save((err, savedEntry) => {
       if (err && respond) {
         respond(404, 'Error saving the image!');
       } else if (respond) {
+        console.log('IMAGE SAVED! ', savedEntry)
         respond(201, savedEntry.id);
       }
     })
