@@ -6,6 +6,8 @@ mongoose.connect('mongodb://localhost/test');
 const usersSchema = new Schema({
   s3ImageLocation: String,
   GoogleVisionResultLabels: String,
+  targetImageLatitude: String,
+  targetImageLongitude: String
 }, { collection: 'img' });
 
 const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels) {
@@ -26,15 +28,21 @@ const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels)
   console.log('Similarity Score: ', similarityScore / referenceImageFromDBLabels.length);
   return similarityScore / referenceImageFromDBLabels.length >= 0.5;
 };
+
 const model = mongoose.model('UserData', usersSchema);
 
 module.exports = {
   userData: model,
 
-  setImage: (s3ImageLocation, GoogleVisionResultLabels, respond) => {
+  setImage: (s3ImageLocation, GoogleVisionResultLabels, targetImageLatitude, targetImageLongitude, respond) => {
     console.log('ANALYZE', respond);
     const query = {};
-    const update = { s3ImageLocation: JSON.stringify(s3ImageLocation), GoogleVisionResultLabels: JSON.stringify(GoogleVisionResultLabels) };
+    const update = { 
+      s3ImageLocation: JSON.stringify(s3ImageLocation), 
+      GoogleVisionResultLabels: JSON.stringify(GoogleVisionResultLabels),
+      targetImageLatitude: JSON.stringify(targetImageLatitude),
+      targetImageLongitude: JSON.stringify(targetImageLongitude) 
+    };
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
     const newImage = new model(update);
