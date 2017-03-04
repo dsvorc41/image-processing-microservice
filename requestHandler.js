@@ -1,4 +1,4 @@
-const sendResponse = require('./utils/sendResponse')
+const sendResponse = require('./utils/sendResponse');
 const setImageHandler = require('./imageHandler/setImage');
 const compareImageHandler = require('./imageHandler/compareImage');
 

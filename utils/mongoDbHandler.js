@@ -32,31 +32,35 @@ const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels)
 const model = mongoose.model('UserData', usersSchema);
 
 const compareImageCoordinates = function (targetImgLat, targetImgLon, userImgLat, userImgLon) {
+  //add + in front of values to convert them from strings to numbers
   const toRad = function (value) {
     return (value * Math.PI) / 180;
   };
 
   const EquirectangularDistance = function () {
     const R = 6371; // Earth radius in km
-    const x = (toRad(userImgLon) - toRad(targetImgLon)) *
-              Math.cos((toRad(targetImgLat) + toRad(userImgLat)) / 2);
-    const y = (toRad(userImgLat) - toRad(targetImgLat));
+    const x = (toRad(+userImgLon) - toRad(+targetImgLon)) *
+              Math.cos((toRad(+targetImgLat) + toRad(+userImgLat)) / 2);
+    const y = (toRad(+userImgLat) - toRad(+targetImgLat));
     return Math.sqrt((x * x) + (y * y)) * R;
   };
 
-  return EquirectangularDistance();
+  const result = EquirectangularDistance();
+  console.log('EquirectangularDistance: ', result);
+  return result;
 };
 
 module.exports = {
   userData: model,
 
-  setImage: (s3ImageLocation, GoogleVisionResultLabels, targetImageLatitude, targetImageLongitude, respond) => {
+  setImage: (s3ImageLocation, GoogleVisionResultLabels, targetImageLatitude, targetImageLongitude, targetImageAllowedDistance, respond) => {
     console.log('ANALYZE', respond);
     const update = { 
       s3ImageLocation: JSON.stringify(s3ImageLocation), 
       GoogleVisionResultLabels: JSON.stringify(GoogleVisionResultLabels),
       targetImageLatitude: JSON.stringify(targetImageLatitude),
-      targetImageLongitude: JSON.stringify(targetImageLongitude) 
+      targetImageLongitude: JSON.stringify(targetImageLongitude), 
+      targetImageAllowedDistance: JSON.stringify(targetImageAllowedDistance) 
     };
 
     const newImage = new model(update);
@@ -65,7 +69,7 @@ module.exports = {
       if (err && respond) {
         respond(404, 'Error saving the image!');
       } else if (respond) {
-        console.log('IMAGE SAVED! ', savedEntry)
+        console.log('IMAGE SAVED! ', savedEntry);
         respond(201, savedEntry.id);
       }
     });
@@ -93,7 +97,12 @@ module.exports = {
         console.log('Error finding the image', err);
         respond(201, 'Error finding the image!');
       } else if (imageFromDB) {
-        console.log(imageFromDB);
+        console.log('COORDINATES LINE 98 mongodBHandler: ',
+          imageFromDB.targetImageLatitude, 
+          imageFromDB.targetImageLongitude, 
+          userImageLatitude,
+          userImageLongitude
+        );
 
         const coordinatesComparison = compareImageCoordinates(
           imageFromDB.targetImageLatitude, 
@@ -112,16 +121,17 @@ module.exports = {
         ///MODIFY THIS TO ACCEPT DYNAMIC DISTANCE///
         ///////////////////////////////////////////
 
-        const withinDistance = coordinatesComparison < 1;
+        const withinDistance = coordinatesComparison <= imageFromDB.targetImageAllowedDistance;
 
         if (labelComparison && withinDistance) {
           respond(201, 'Images are the same!');
         } else if (labelComparison && !withinDistance) {
-          respond(201, `You need to get within ${coordinatesComparison}km and then take the picture!`);
+          respond(201, `You need to get within ${imageFromDB.targetImageAllowedDistance}km \
+                        and then take the picture!`);
         } else {
           respond(201, 'Images are not the same!');
         }
-        
+
       } else {
           respond(201, 'Images not found in the database!');
       }

@@ -12,7 +12,7 @@ module.exports = (req, res) => {
     ///////////////////////////////////////////////////////
     ///Response is only sent after google vision success///
     ///////////////////////////////////////////////////////
-    console.log(`Serving ${req.method} request for ${req.url} (inside requestHandler.postImage)`);
+    console.log(`Serving ${req.method} request for ${req.url} (inside requestHandler.compareImage)`);
     const imageBuffer = getImageBuffer(req.body.imageBuffer);
     const { userImageLatitude, userImageLongitude } = req.body;
 

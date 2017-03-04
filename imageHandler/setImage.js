@@ -11,7 +11,7 @@ const getImageBuffer = function (imageFromRequestBody) {
 module.exports = (req, res) => {
     console.log(`Serving ${req.method} request for ${req.url} (inside requestHandler.postImage)`);
     const imageBuffer = getImageBuffer(req.body.imageBuffer);
-    const { targetImageLatitude, targetImageLongitude } = req.body;
+    const { targetImageLatitude, targetImageLongitude, targetImageAllowedDistance } = req.body;
 
     const sendToGoogleVision = function(s3ImageLocation) {
       analyzeImageViaGoogleVision(imageBuffer, (googleImageLabels) => {
@@ -24,6 +24,7 @@ module.exports = (req, res) => {
           googleImageLabels[1],
           targetImageLatitude,
           targetImageLongitude,
+          targetImageAllowedDistance
           (statusCode, message) => {
             console.log('ANALYZE');
             sendResponse(res, statusCode, headers, message);
