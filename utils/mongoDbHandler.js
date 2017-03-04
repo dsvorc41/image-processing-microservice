@@ -31,6 +31,7 @@ const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels)
 const model = mongoose.model('UserData', usersSchema);
 
 const compareImageCoordinates = function (targetImgLat, targetImgLon, userImgLat, userImgLon) {
+  //add + in front of values to convert them from strings to numbers
   const toRad = function (value) {
     return (value * Math.PI) / 180;
   };
@@ -67,7 +68,21 @@ module.exports = {
         respond(201, savedEntry.id);
       }
     });
-    
+    ///////////////////////////////////////////
+    // Find the document
+    // model.findOneAndUpdate(query, update, options, (error, result) => {
+    //     // console.log('RESULT', result);
+    //     result = result || new model(query);
+        
+    //     result.save((error, savedEntry) => {
+    //       if (error && respond) {
+    //         respond(404, 'Error saving the image!');
+    //       } else if (respond) {
+    //         respond(201, savedEntry.id);
+    //       }
+    //     });
+    // });
+    //////////////////////////////////////////
   },
 
   compareImage: (comparisonImageId, googleImageLabelsToCompare, userImageLatitude, userImageLongitude, respond) => {
@@ -88,7 +103,11 @@ module.exports = {
           googleImageLabelsToCompare
         );
 
-       
+        ///////////////////////////////////////////
+        ///HARDCODED DISTANCE < 1km//////////
+        ///MODIFY THIS TO ACCEPT DYNAMIC DISTANCE///
+        ///////////////////////////////////////////
+
         const withinDistance = coordinatesComparison <= (+imageFromDB.targetImageAllowedDistance);
 
         if (labelComparison && withinDistance) {
