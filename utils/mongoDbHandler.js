@@ -92,14 +92,6 @@ module.exports = {
       if (err || !imageFromDB) {
         respond(201, 'Error finding the image!');
       } else if (imageFromDB) {
-          imageFromDB,
-          imageFromDB.targetImageAllowedDistance,
-          imageFromDB.targetImageLatitude, 
-          imageFromDB.targetImageLongitude, 
-          userImageLatitude,
-          userImageLongitude
-        );
-
         const coordinatesComparison = compareImageCoordinates(
           imageFromDB.targetImageLatitude, 
           imageFromDB.targetImageLongitude, 
@@ -127,7 +119,6 @@ module.exports = {
         } else {
           respond(201, 'Images are not the same!');
         }
-
       } else {
           respond(201, 'Images not found in the database!');
       }
