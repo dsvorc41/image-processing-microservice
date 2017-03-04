@@ -31,19 +31,33 @@ const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels)
 
 const model = mongoose.model('UserData', usersSchema);
 
+const compareImageCoordinates = function (targetImgLat, targetImgLon, userImgLat, userImgLon) {
+  const toRad = function (value) {
+    return (value * Math.PI) / 180;
+  };
+
+  const EquirectangularDistance = function () {
+    const R = 6371; // Earth radius in km
+    const x = (toRad(userImgLon) - toRad(targetImgLon)) *
+              Math.cos((toRad(targetImgLat) + toRad(userImgLat)) / 2);
+    const y = (toRad(userImgLat) - toRad(targetImgLat));
+    return Math.sqrt((x * x) + (y * y)) * R;
+  };
+
+  return EquirectangularDistance();
+};
+
 module.exports = {
   userData: model,
 
   setImage: (s3ImageLocation, GoogleVisionResultLabels, targetImageLatitude, targetImageLongitude, respond) => {
     console.log('ANALYZE', respond);
-    const query = {};
     const update = { 
       s3ImageLocation: JSON.stringify(s3ImageLocation), 
       GoogleVisionResultLabels: JSON.stringify(GoogleVisionResultLabels),
       targetImageLatitude: JSON.stringify(targetImageLatitude),
       targetImageLongitude: JSON.stringify(targetImageLongitude) 
     };
-    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
     const newImage = new model(update);
     console.log('IMAGE SAVE PARAMS: ', update);
@@ -54,7 +68,7 @@ module.exports = {
         console.log('IMAGE SAVED! ', savedEntry)
         respond(201, savedEntry.id);
       }
-    })
+    });
     ///////////////////////////////////////////
     // Find the document
     // model.findOneAndUpdate(query, update, options, (error, result) => {
@@ -72,7 +86,7 @@ module.exports = {
     //////////////////////////////////////////
   },
 
-  compareImage: (comparisonImageId, googleImageLabelsToCompare, respond) => {
+  compareImage: (comparisonImageId, googleImageLabelsToCompare, userImageLatitude, userImageLongitude, respond) => {
     const query = { _id: comparisonImageId };
     model.findOne(query, {}, (err, imageFromDB) => {
       if (err || !imageFromDB) {
@@ -80,12 +94,34 @@ module.exports = {
         respond(201, 'Error finding the image!');
       } else if (imageFromDB) {
         console.log(imageFromDB);
-        const comparison = compareImageLabels(imageFromDB.GoogleVisionResultLabels, googleImageLabelsToCompare);
-        if (comparison) {
+
+        const coordinatesComparison = compareImageCoordinates(
+          imageFromDB.targetImageLatitude, 
+          imageFromDB.targetImageLongitude, 
+          userImageLatitude,
+          userImageLongitude
+        );
+
+        const labelComparison = compareImageLabels(
+          imageFromDB.GoogleVisionResultLabels, 
+          googleImageLabelsToCompare
+        );
+
+        ///////////////////////////////////////////
+        ///HARDCODED DISTANCE < 1km//////////
+        ///MODIFY THIS TO ACCEPT DYNAMIC DISTANCE///
+        ///////////////////////////////////////////
+
+        const withinDistance = coordinatesComparison < 1;
+
+        if (labelComparison && withinDistance) {
           respond(201, 'Images are the same!');
+        } else if (labelComparison && !withinDistance) {
+          respond(201, `You need to get within ${coordinatesComparison}km and then take the picture!`);
         } else {
           respond(201, 'Images are not the same!');
         }
+        
       } else {
           respond(201, 'Images not found in the database!');
       }

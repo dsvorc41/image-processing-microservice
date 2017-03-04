@@ -14,6 +14,8 @@ module.exports = (req, res) => {
     ///////////////////////////////////////////////////////
     console.log(`Serving ${req.method} request for ${req.url} (inside requestHandler.postImage)`);
     const imageBuffer = getImageBuffer(req.body.imageBuffer);
+    const { userImageLatitude, userImageLongitude } = req.body;
+
     console.log('IMAGE ID: ', req.body);
     // const newUser = new updateMongo.userData(item);
     const sendToGoogleVision = function (imageId) {
@@ -25,6 +27,8 @@ module.exports = (req, res) => {
           mongoHandler.compareImage(
             imageId,  
             resultLabels[1], 
+            userImageLatitude, 
+            userImageLongitude,
             (statusCode, message) => {
               console.log(sendResponse);
               sendResponse(res, statusCode, headers, message);
