@@ -7,7 +7,8 @@ const usersSchema = new Schema({
   s3ImageLocation: String,
   GoogleVisionResultLabels: String,
   targetImageLatitude: String,
-  targetImageLongitude: String
+  targetImageLongitude: String,
+  targetImageAllowedDistance: String
 }, { collection: 'img' });
 
 const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels) {
@@ -25,7 +26,6 @@ const compareImageLabels = function (referenceImageFromDBLabels, newImageLabels)
       similarityScore += 1;
     }
   });
-  console.log('Similarity Score: ', similarityScore / referenceImageFromDBLabels.length);
   return similarityScore / referenceImageFromDBLabels.length >= 0.5;
 };
 
@@ -46,7 +46,6 @@ const compareImageCoordinates = function (targetImgLat, targetImgLon, userImgLat
   };
 
   const result = EquirectangularDistance();
-  console.log('EquirectangularDistance: ', result);
   return result;
 };
 
@@ -54,7 +53,6 @@ module.exports = {
   userData: model,
 
   setImage: (s3ImageLocation, GoogleVisionResultLabels, targetImageLatitude, targetImageLongitude, targetImageAllowedDistance, respond) => {
-    console.log('ANALYZE', respond);
     const update = { 
       s3ImageLocation: JSON.stringify(s3ImageLocation), 
       GoogleVisionResultLabels: JSON.stringify(GoogleVisionResultLabels),
@@ -64,12 +62,10 @@ module.exports = {
     };
 
     const newImage = new model(update);
-    console.log('IMAGE SAVE PARAMS: ', update);
     newImage.save((err, savedEntry) => {
       if (err && respond) {
         respond(404, 'Error saving the image!');
       } else if (respond) {
-        console.log('IMAGE SAVED! ', savedEntry);
         respond(201, savedEntry.id);
       }
     });
@@ -94,10 +90,10 @@ module.exports = {
     const query = { _id: comparisonImageId };
     model.findOne(query, {}, (err, imageFromDB) => {
       if (err || !imageFromDB) {
-        console.log('Error finding the image', err);
         respond(201, 'Error finding the image!');
       } else if (imageFromDB) {
-        console.log('COORDINATES LINE 98 mongodBHandler: ',
+          imageFromDB,
+          imageFromDB.targetImageAllowedDistance,
           imageFromDB.targetImageLatitude, 
           imageFromDB.targetImageLongitude, 
           userImageLatitude,
@@ -121,12 +117,12 @@ module.exports = {
         ///MODIFY THIS TO ACCEPT DYNAMIC DISTANCE///
         ///////////////////////////////////////////
 
-        const withinDistance = coordinatesComparison <= imageFromDB.targetImageAllowedDistance;
+        const withinDistance = coordinatesComparison <= (+imageFromDB.targetImageAllowedDistance);
 
         if (labelComparison && withinDistance) {
           respond(201, 'Images are the same!');
         } else if (labelComparison && !withinDistance) {
-          respond(201, `You need to get within ${imageFromDB.targetImageAllowedDistance}km \
+          respond(201, `You need to get within ${+imageFromDB.targetImageAllowedDistance}km \
                         and then take the picture!`);
         } else {
           respond(201, 'Images are not the same!');
