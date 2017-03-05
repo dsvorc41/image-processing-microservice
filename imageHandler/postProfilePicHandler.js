@@ -11,9 +11,9 @@ module.exports = (req, res) => {
     console.log(`Serving ${req.method} request for ${req.url} (inside requestHandler.postProfilePic)`);
     const imageBuffer = getImageBuffer(req.body.imageBuffer);
     const userEmail = req.body.email;
-
-    uploadImageToS3(userEmail, imageBuffer, (s3ImageLocation) => {
+    console.log('userEmail: ', userEmail);
+    uploadImageToS3(imageBuffer, (s3ImageLocation) => {
       console.log('LOCATION!', s3ImageLocation);
       sendResponse(res, 201, headers, `user profile pic saved at: ${s3ImageLocation}`);
-    }, 'user-profile-pics1');
+    }, 'user-profile-pics1', userEmail);
 };
