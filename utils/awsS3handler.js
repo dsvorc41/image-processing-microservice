@@ -1,13 +1,15 @@
 const AWS = require('aws-sdk');
+
 AWS.config.loadFromPath('awsConfig.json');
 const s3 = new AWS.S3();
 
 module.exports = {
-  uploadImageToS3: function (imageBuffer, callback) {
-    const randomImageName = `Dan-${Math.random().toString().slice(2)}.jpg`;
+  uploadImageToS3: function (imageName, imageBuffer, callback, bucket) {
+    imageName = imageName || 'randomUser';
+    const randomImageName = `${imageName}${Math.random().toString().slice(2)}.jpg`;
 
     const params = {
-      Bucket: 'set-image-folder',
+      Bucket: bucket || 'set-image-folder',
       Key: randomImageName,
       Body: imageBuffer
     };

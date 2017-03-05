@@ -1,6 +1,7 @@
 const sendResponse = require('./utils/sendResponse');
 const setImageHandler = require('./imageHandler/setImage');
 const compareImageHandler = require('./imageHandler/compareImage');
+const postProfilePicHandler = require('./imageHandler/postProfilePicHandler');
 
 module.exports = {
   landing: (req, res) => { 
@@ -14,6 +15,10 @@ module.exports = {
 
   compareImage: (req, res) => {
     compareImageHandler(req, res);
+  },
+
+  postProfilePic: (req, res) => {
+    postProfilePicHandler(req, res);
   }
 };
 
