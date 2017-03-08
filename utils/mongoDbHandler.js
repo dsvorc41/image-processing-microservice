@@ -65,7 +65,11 @@ module.exports = {
       if (err && respond) {
         respond(404, 'Error saving the image!');
       } else if (respond) {
-        respond(201, savedEntry.id);
+        const responseData = {
+          imageMongoId: savedEntry.id,
+          s3ImageLocation: savedEntry.s3ImageLocation
+        };
+        respond(201, JSON.stringify(responseData));
       }
     });
     ///////////////////////////////////////////
