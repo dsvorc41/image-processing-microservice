@@ -90,6 +90,10 @@ module.exports = {
   },
 
   compareImage: (comparisonImageId, googleImageLabelsToCompare, userImageLatitude, userImageLongitude, respond) => {
+    console.log('comparisonImageId: ', comparisonImageId);
+    console.log('googleImageLabelsToCompare: ', googleImageLabelsToCompare);
+    console.log('userImageLatitude: ', userImageLatitude);
+    console.log('userImageLongitude: ', userImageLongitude);
     const query = { _id: comparisonImageId };
     model.findOne(query, {}, (err, imageFromDB) => {
       if (err || !imageFromDB) {
@@ -107,12 +111,16 @@ module.exports = {
           googleImageLabelsToCompare
         );
 
+        let allowedDistance = +imageFromDB.targetImageAllowedDistance;
+        if (allowedDistance < 1) {
+          allowedDistance = 1;
+        }
         ///////////////////////////////////////////
         ///HARDCODED DISTANCE < 1km//////////
         ///MODIFY THIS TO ACCEPT DYNAMIC DISTANCE///
         ///////////////////////////////////////////
 
-        const withinDistance = coordinatesComparison <= (+imageFromDB.targetImageAllowedDistance);
+        const withinDistance = coordinatesComparison <= (allowedDistance);
 
         if (labelComparison && withinDistance) {
           respond(201, 'Images are the same!');
